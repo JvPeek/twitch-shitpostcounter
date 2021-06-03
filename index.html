@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" type="text/css" href="main.css" media="screen" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@700&display=swap" rel="stylesheet">
+    <title>Overlay</title>
+  </head>
+  <body onload="window.scrollTo(0, 0);">
+    <div id="logoContainer">
+
+    </div>
+
+    <script src="//unpkg.com/twitch-js@>2.0.0-beta.41"></script>
+
+    <script type="module">
+
+  	const { Chat } = window.TwitchJs;
+  	let token = undefined;
+  	let username = undefined;
+    let timer;
+    let audioloop = false;
+    let timerDuration;
+    let channel = "jvpeek";
+    var currentLogo;
+    let deletedMsgs = 0;
+    let Msgs= 0;
+  function countMessage(type) {
+    if (type == "CLEARMSG") {
+      deletedMsgs++;
+    }
+    if (type == "PRIVMSG") {
+      Msgs++;
+    }
+    document.getElementById("channelname").innerHTML=channel;
+    document.getElementById("messages").innerHTML=Msgs;
+    document.getElementById("deleted").innerHTML=deletedMsgs + " (" + 100/Msgs*deletedMsgs + "%)";
+
+  }
+  const handleMessage = (msg) => {
+    countMessage(msg.event);
+    if (msg.event == "CLEARMSG") { console.log(msg); }
+    if (msg.event != "PRIVMSG") { return; }
+
+    if (msg.message.startsWith("!")) {
+
+      if(msg.tags.isModerator == false && msg.tags.badges.broadcaster != true && msg.username != "jvpeek") {
+        console.log("nope.jpg");
+        //return;
+      }
+
+      // mods gay
+
+    }
+  };
+	function chatsay(channel, text) {
+	  if (token != undefined) {
+	    chatobj.say(channel, text);
+	  } else {
+      console.log(text + " is what i would say if i HAD A TOKEN!!11!");
+    }
+	}
+	const run = async () => {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    // Parse channel parameter
+    if(urlParams.has('channel')) {
+      channel = urlParams.get('channel');
+    }
+    if(urlParams.has('username') && urlParams.has('token')) {
+      username = urlParams.get('username');
+      token = urlParams.get('token');
+    }
+	  const chat = new Chat({
+	    token,
+	    username,
+	    log: { level: "warn" }
+	  });
+
+
+	  chat.on("*", (message) => {
+	    handleMessage(message);
+	  });
+
+	  await chat.connect();
+	  await chat.join(channel);
+	  return chat;
+	};
+	const chatobj = run();
+
+
+    </script>
+    <div id="stats">
+      Channel: <span id="channelname"></span><br />
+      Nachrichten: <span id="messages"></span><br />
+      davon gelöscht: <span id="deleted"></span>
+    </div>
+  </body>
+</html>
